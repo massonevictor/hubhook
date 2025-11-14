@@ -1,125 +1,73 @@
-# Welcome to your Lovable project
+# WebhookHub
 
-## Project info
+Plataforma para ingestão, armazenamento e redirecionamento de webhooks. Inspirada em soluções como Hookdeck, oferece fila de entregas com retries, múltiplos destinos por rota e painel React para monitoramento.
 
-**URL**: https://lovable.dev/projects/d419677f-892e-44f7-aeaa-50aa90d000e2
+## Stack
 
-## How can I edit this code?
+- Vite + React + TypeScript + shadcn-ui (frontend)
+- Fastify + Prisma + BullMQ (backend)
+- Postgres 16 (persistência) e Redis 7 (fila)
 
-There are several ways of editing your application.
+## Pré-requisitos
 
-**Use Lovable**
+- Node.js 20+
+- npm
+- Docker (opcional, para subida via compose)
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/d419677f-892e-44f7-aeaa-50aa90d000e2) and start prompting.
+## Configuração local
 
-Changes made via Lovable will be committed automatically to this repo.
+1. Instale dependências:
+   ```sh
+   npm install
+   ```
+2. Gere o client Prisma:
+   ```sh
+   npm run prisma:generate
+   ```
+3. Configure variáveis copiando `.env.example` para `.env` e ajustando URLs conforme seu banco/Redis.
+4. Execute migrações:
+   ```sh
+   npx prisma migrate dev
+   ```
+5. Suba backend e frontend em terminais separados:
+   ```sh
+   npm run server:dev
+   npm run dev
+   ```
 
-**Use your preferred IDE**
+## Docker
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## Backend e infraestrutura
-
-- Fastify + Prisma para expor a API REST (`server/src`)
-- Postgres 16 (dados principais) e Redis 7 (fila BullMQ) — os serviços já existem na stack Portainer descrita pelo usuário
-- Rotas com múltiplos destinos, histórico de tentativas por destino e replays a partir da API/UX
-
-### Variáveis de ambiente
-
-Copie `.env.example` para `.env` e ajuste conforme necessário:
-
-```
-DATABASE_URL=postgresql://appuser4r3:9wg4hw948gha048gh@postgres-db:5432/appdb134
-REDIS_URL=redis://redis-db:6379
-SERVER_PORT=4000
-WEBHOOK_DEFAULT_SECRET=change-this-secret
-VITE_API_URL=http://localhost:4000
-```
-
-### Rodando a API / fila de entregas
-
-```
-npm install
-npx prisma generate
-npm run server:dev
-```
-
-Use `npm run prisma:generate` e `npx prisma migrate dev` para aplicar o schema no Postgres do Portainer. A aplicação frontend continua com `npm run dev`, agora consumindo `VITE_API_URL`.
-
-### Docker
-
-1. Copie `.env.example` para `.env` (ajuste `DATABASE_URL`/`REDIS_URL` se usar recursos externos em vez dos contêineres locais).
-2. Construa e suba todos os serviços:
+Há dois Dockerfiles: `Dockerfile.server` (API) e `Dockerfile.web` (frontend). Para subir tudo de uma vez use o compose:
 
 ```sh
 docker compose up --build -d
 ```
 
-3. Aplique as migrações no banco que roda dentro do compose:
+Aplique migrações dentro do contêiner da API:
 
 ```sh
 docker compose run --rm server npx prisma migrate deploy
 ```
 
-Os serviços expõem:
+Serviços expostos:
 
 - Frontend: http://localhost:5173
 - API Fastify: http://localhost:4000
 - Postgres: localhost:5432
 - Redis: localhost:6379
 
-Se você já tiver Postgres/Redis externos (ex.: stack Portainer existente), basta desligar esses serviços no `docker-compose.yml` e apontar `DATABASE_URL`/`REDIS_URL` para os hosts corretos.
+Se já houver Postgres/Redis externos (por exemplo, instâncias rodando em Portainer), remova-os do `docker-compose.yml` e ajuste `DATABASE_URL` / `REDIS_URL` nas variáveis de ambiente.
 
-## How can I deploy this project?
+## Scripts úteis
 
-Simply open [Lovable](https://lovable.dev/projects/d419677f-892e-44f7-aeaa-50aa90d000e2) and click on Share -> Publish.
+- `npm run lint` — ESLint
+- `npm run server:build` — compila a API
+- `npm run server:start` — inicia o bundle compilado
+- `npm run prisma:generate` — atualiza o client Prisma
 
-## Can I connect a custom domain to my Lovable project?
+## Fluxo de uso
 
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+1. Cadastre um projeto via API (`POST /api/projects`) ou ajuste para expor um formulário no front.
+2. Crie rotas usando o modal “Nova Rota” e defina múltiplos destinos.
+3. Direcione seus provedores externos para `POST /api/inbound/:slug?secret=...` com o segredo fornecido no painel.
+4. Utilize as abas “Eventos” e “Rotas” para monitorar entregas, consultar payloads, tentativas e reenfileirar eventos.
