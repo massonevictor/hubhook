@@ -49,12 +49,11 @@ Aplique migrações dentro do contêiner da API:
 docker compose run --rm server npx prisma migrate deploy
 ```
 
-Serviços expostos:
+Serviços expostos (padrão do compose):
 
-- Frontend: http://localhost:5173
-- API Fastify: http://localhost:4000
-- Postgres: localhost:5432
-- Redis: localhost:6379
+- Frontend: http://localhost:8081
+- API Fastify: http://localhost:4100
+- Postgres/Redis: usar as instâncias externas configuradas (por exemplo `postgres-db` e `redis-db` na rede `proxy`)
 
 Se já houver Postgres/Redis externos (por exemplo, instâncias rodando em Portainer), remova-os do `docker-compose.yml` e ajuste `DATABASE_URL` / `REDIS_URL` nas variáveis de ambiente.
 
