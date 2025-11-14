@@ -1,14 +1,13 @@
 version: "3.8"
 
+x-stack-env: &stack-env
+  - stack.env
+
 services:
   postgres:
     image: postgres:16
     restart: unless-stopped
-    environment:
-      POSTGRES_DB: appdb134
-      POSTGRES_USER: appuser4r3
-      POSTGRES_PASSWORD: 9wg4hw948gha048gh
-      TZ: America/Sao_Paulo
+    env_file: *stack-env
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
@@ -18,6 +17,7 @@ services:
     image: redis:7
     restart: unless-stopped
     command: ["redis-server", "--appendonly", "no", "--save", ""]
+    env_file: *stack-env
     ports:
       - "6379:6379"
 
@@ -28,11 +28,7 @@ services:
     depends_on:
       - postgres
       - redis
-    environment:
-      DATABASE_URL: postgresql://appuser4r3:9wg4hw948gha048gh@postgres:5432/appdb134
-      REDIS_URL: redis://redis:6379
-      SERVER_PORT: 4000
-      WEBHOOK_DEFAULT_SECRET: change-this-secret
+    env_file: *stack-env
     ports:
       - "4000:4000"
 
@@ -41,9 +37,10 @@ services:
       context: .
       dockerfile: Dockerfile.web
       args:
-        VITE_API_URL: http://server:4000
+        VITE_API_URL: ${VITE_API_URL:-http://server:4000}
     depends_on:
       - server
+    env_file: *stack-env
     ports:
       - "5173:80"
 
