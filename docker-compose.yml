@@ -25,6 +25,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.server
+      args:
+        DATABASE_URL: ${DATABASE_URL:-postgresql://appuser4r3:9wg4hw948gha048gh@postgres:5432/appdb134}
     depends_on:
       - postgres
       - redis
