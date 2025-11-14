@@ -1,7 +1,6 @@
-import { EventStatus } from "@prisma/client";
+import { EventStatus, prisma } from "../lib/prisma.js";
 import { FastifyInstance } from "fastify";
 import { addDays, endOfDay, format, startOfDay, subDays } from "date-fns";
-import { prisma } from "../lib/prisma.js";
 
 export default async function registerStatsRoutes(app: FastifyInstance) {
   app.get("/api/stats/summary", async () => {

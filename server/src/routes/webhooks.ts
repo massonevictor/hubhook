@@ -1,8 +1,8 @@
-import { EventStatus, Prisma } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 import { FastifyInstance } from "fastify";
 import { customAlphabet } from "nanoid";
 import { z } from "zod";
-import { prisma } from "../lib/prisma.js";
+import { EventStatus, prisma } from "../lib/prisma.js";
 import { enqueueDelivery } from "../services/delivery.js";
 import { slugify } from "../utils/slugify.js";
 
@@ -247,8 +247,8 @@ export default async function registerWebhookRoutes(app: FastifyInstance) {
     const where: Prisma.WebhookEventWhereInput = search
       ? {
           OR: [
-            { route: { name: { contains: search, mode: Prisma.QueryMode.insensitive } } },
-            { route: { project: { name: { contains: search, mode: Prisma.QueryMode.insensitive } } } },
+            { route: { name: { contains: search, mode: "insensitive" } } },
+            { route: { project: { name: { contains: search, mode: "insensitive" } } } },
           ],
         }
       : {};

@@ -1,7 +1,7 @@
-import { EventStatus, Prisma } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
-import { prisma } from "../lib/prisma.js";
+import { EventStatus, prisma } from "../lib/prisma.js";
 
 const projectBodySchema = z.object({
   name: z.string().min(3),
