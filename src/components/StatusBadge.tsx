@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, XCircle, Clock } from "lucide-react";
 
-type Status = "success" | "failed" | "pending";
+type Status = "success" | "failed" | "pending" | "retrying";
 
 interface StatusBadgeProps {
   status: Status;
@@ -21,6 +21,11 @@ export function StatusBadge({ status }: StatusBadgeProps) {
     },
     pending: {
       label: "Pendente",
+      icon: Clock,
+      className: "bg-warning/10 text-warning border-warning/20 hover:bg-warning/20",
+    },
+    retrying: {
+      label: "Reenviando",
       icon: Clock,
       className: "bg-warning/10 text-warning border-warning/20 hover:bg-warning/20",
     },

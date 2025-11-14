@@ -1,0 +1,84 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum EventStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  RETRYING
+}
+
+model Project {
+  id          String         @id @default(cuid())
+  name        String
+  description String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  routes      WebhookRoute[]
+}
+
+model WebhookRoute {
+  id              String         @id @default(cuid())
+  projectId       String
+  project         Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  name            String
+  slug            String         @unique
+  retentionDays   Int            @default(30)
+  maxRetries      Int            @default(3)
+  secret          String
+  isActive        Boolean        @default(true)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  events          WebhookEvent[]
+  destinations    WebhookDestination[]
+}
+
+model WebhookDestination {
+  id        String       @id @default(cuid())
+  routeId   String
+  route     WebhookRoute @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  label     String
+  endpoint  String
+  priority  Int          @default(0)
+  isActive  Boolean      @default(true)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  attempts  DeliveryAttempt[]
+}
+
+model WebhookEvent {
+  id            String            @id @default(cuid())
+  routeId       String
+  route         WebhookRoute      @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  payload       Json
+  headers       Json
+  status        EventStatus       @default(PENDING)
+  attemptCount  Int               @default(0)
+  lastAttemptAt DateTime?
+  errorMessage  String?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  attempts      DeliveryAttempt[]
+  destinationCount Int            @default(0)
+  deliveredCount   Int            @default(0)
+}
+
+model DeliveryAttempt {
+  id             String       @id @default(cuid())
+  eventId        String
+  event          WebhookEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  destinationId  String
+  destination    WebhookDestination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+  targetEndpoint String
+  responseStatus Int?
+  responseBody   String?
+  errorMessage   String?
+  success        Boolean       @default(false)
+  createdAt      DateTime      @default(now())
+}

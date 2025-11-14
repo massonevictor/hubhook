@@ -1,15 +1,13 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Plus, Folder, Activity } from "lucide-react";
-
-const mockProjects = [
-  { id: 1, name: "E-commerce API", webhooks: 156, successRate: 98.5, description: "Webhooks de pagamento e notificações" },
-  { id: 2, name: "CRM Integration", webhooks: 89, successRate: 95.2, description: "Sincronização de leads e contatos" },
-  { id: 3, name: "Analytics Platform", webhooks: 234, successRate: 99.1, description: "Eventos de tracking e conversão" },
-  { id: 4, name: "Support System", webhooks: 67, successRate: 96.8, description: "Tickets e notificações de suporte" },
-];
+import { useProjects } from "@/hooks/use-projects";
 
 export default function Projects() {
+  const { data, isLoading } = useProjects();
+  const projects = data ?? [];
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -23,40 +21,54 @@ export default function Projects() {
         </Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {mockProjects.map((project) => (
-          <Card key={project.id} className="bg-card border-border hover:border-primary/50 transition-colors cursor-pointer">
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div className="flex items-center space-x-2">
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                    <Folder className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-card-foreground">{project.name}</CardTitle>
-                    <CardDescription className="text-muted-foreground">{project.description}</CardDescription>
+      {isLoading ? (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <Skeleton key={index} className="h-40 w-full" />
+          ))}
+        </div>
+      ) : projects.length === 0 ? (
+        <div className="border border-dashed border-border rounded-lg p-10 text-center text-muted-foreground">
+          Nenhum projeto cadastrado ainda.
+        </div>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {projects.map((project) => (
+            <Card key={project.id} className="bg-card border-border hover:border-primary/50 transition-colors">
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center space-x-2">
+                    <div className="p-2 bg-primary/10 rounded-lg">
+                      <Folder className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-card-foreground">{project.name}</CardTitle>
+                      {project.description && (
+                        <CardDescription className="text-muted-foreground">{project.description}</CardDescription>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Webhooks</span>
-                  <span className="text-sm font-medium text-card-foreground">{project.webhooks}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Taxa de Sucesso</span>
-                  <div className="flex items-center space-x-1">
-                    <Activity className="h-3 w-3 text-success" />
-                    <span className="text-sm font-medium text-success">{project.successRate}%</span>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Webhooks</span>
+                    <span className="text-sm font-medium text-card-foreground">{project.webhookCount}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Taxa de Sucesso</span>
+                    <div className="flex items-center space-x-1">
+                      <Activity className="h-3 w-3 text-success" />
+                      <span className="text-sm font-medium text-success">{project.successRate}%</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

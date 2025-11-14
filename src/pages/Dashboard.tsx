@@ -1,23 +1,27 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Plus, Activity, CheckCircle2, XCircle, TrendingUp } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-
-const mockData = [
-  { date: "01/11", total: 45, success: 42, failed: 3 },
-  { date: "02/11", total: 52, success: 50, failed: 2 },
-  { date: "03/11", total: 38, success: 35, failed: 3 },
-  { date: "04/11", total: 65, success: 61, failed: 4 },
-  { date: "05/11", total: 71, success: 68, failed: 3 },
-  { date: "06/11", total: 58, success: 55, failed: 3 },
-  { date: "07/11", total: 82, success: 80, failed: 2 },
-];
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/lib/api";
 
 export default function Dashboard() {
-  const totalWebhooks = mockData.reduce((sum, day) => sum + day.total, 0);
-  const totalSuccess = mockData.reduce((sum, day) => sum + day.success, 0);
-  const totalFailed = mockData.reduce((sum, day) => sum + day.failed, 0);
-  const successRate = ((totalSuccess / totalWebhooks) * 100).toFixed(1);
+  const { data, isLoading } = useQuery({
+    queryKey: ["dashboard-summary"],
+    queryFn: api.getDashboardSummary,
+  });
+
+  const summary = data ?? {
+    totalWebhooks: 0,
+    successCount: 0,
+    failedCount: 0,
+    pendingCount: 0,
+    successRate: 0,
+    chart: [],
+    projects: 0,
+    activeRoutes: 0,
+  };
 
   return (
     <div className="space-y-6">
@@ -39,7 +43,11 @@ export default function Dashboard() {
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-card-foreground">{totalWebhooks}</div>
+            {isLoading ? (
+              <Skeleton className="h-7 w-20" />
+            ) : (
+              <div className="text-2xl font-bold text-card-foreground">{summary.totalWebhooks}</div>
+            )}
             <p className="text-xs text-muted-foreground">Últimos 7 dias</p>
           </CardContent>
         </Card>
@@ -50,7 +58,11 @@ export default function Dashboard() {
             <TrendingUp className="h-4 w-4 text-success" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-card-foreground">{successRate}%</div>
+            {isLoading ? (
+              <Skeleton className="h-7 w-16" />
+            ) : (
+              <div className="text-2xl font-bold text-card-foreground">{summary.successRate}%</div>
+            )}
             <p className="text-xs text-muted-foreground">Últimos 7 dias</p>
           </CardContent>
         </Card>
@@ -61,7 +73,11 @@ export default function Dashboard() {
             <CheckCircle2 className="h-4 w-4 text-success" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-success">{totalSuccess}</div>
+            {isLoading ? (
+              <Skeleton className="h-7 w-20" />
+            ) : (
+              <div className="text-2xl font-bold text-success">{summary.successCount}</div>
+            )}
             <p className="text-xs text-muted-foreground">Últimos 7 dias</p>
           </CardContent>
         </Card>
@@ -72,7 +88,11 @@ export default function Dashboard() {
             <XCircle className="h-4 w-4 text-destructive" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-destructive">{totalFailed}</div>
+            {isLoading ? (
+              <Skeleton className="h-7 w-12" />
+            ) : (
+              <div className="text-2xl font-bold text-destructive">{summary.failedCount}</div>
+            )}
             <p className="text-xs text-muted-foreground">Últimos 7 dias</p>
           </CardContent>
         </Card>
@@ -84,16 +104,16 @@ export default function Dashboard() {
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={mockData}>
+            <LineChart data={summary.chart}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" />
               <YAxis stroke="hsl(var(--muted-foreground))" />
-              <Tooltip 
-                contentStyle={{ 
+              <Tooltip
+                contentStyle={{
                   backgroundColor: "hsl(var(--popover))",
                   border: "1px solid hsl(var(--border))",
                   borderRadius: "var(--radius)",
-                  color: "hsl(var(--popover-foreground))"
+                  color: "hsl(var(--popover-foreground))",
                 }}
               />
               <Line type="monotone" dataKey="total" stroke="hsl(var(--primary))" strokeWidth={2} name="Total" />

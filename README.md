@@ -60,6 +60,58 @@ This project is built with:
 - shadcn-ui
 - Tailwind CSS
 
+## Backend e infraestrutura
+
+- Fastify + Prisma para expor a API REST (`server/src`)
+- Postgres 16 (dados principais) e Redis 7 (fila BullMQ) — os serviços já existem na stack Portainer descrita pelo usuário
+- Rotas com múltiplos destinos, histórico de tentativas por destino e replays a partir da API/UX
+
+### Variáveis de ambiente
+
+Copie `.env.example` para `.env` e ajuste conforme necessário:
+
+```
+DATABASE_URL=postgresql://appuser4r3:9wg4hw948gha048gh@postgres-db:5432/appdb134
+REDIS_URL=redis://redis-db:6379
+SERVER_PORT=4000
+WEBHOOK_DEFAULT_SECRET=change-this-secret
+VITE_API_URL=http://localhost:4000
+```
+
+### Rodando a API / fila de entregas
+
+```
+npm install
+npx prisma generate
+npm run server:dev
+```
+
+Use `npm run prisma:generate` e `npx prisma migrate dev` para aplicar o schema no Postgres do Portainer. A aplicação frontend continua com `npm run dev`, agora consumindo `VITE_API_URL`.
+
+### Docker
+
+1. Copie `.env.example` para `.env` (ajuste `DATABASE_URL`/`REDIS_URL` se usar recursos externos em vez dos contêineres locais).
+2. Construa e suba todos os serviços:
+
+```sh
+docker compose up --build -d
+```
+
+3. Aplique as migrações no banco que roda dentro do compose:
+
+```sh
+docker compose run --rm server npx prisma migrate deploy
+```
+
+Os serviços expõem:
+
+- Frontend: http://localhost:5173
+- API Fastify: http://localhost:4000
+- Postgres: localhost:5432
+- Redis: localhost:6379
+
+Se você já tiver Postgres/Redis externos (ex.: stack Portainer existente), basta desligar esses serviços no `docker-compose.yml` e apontar `DATABASE_URL`/`REDIS_URL` para os hosts corretos.
+
 ## How can I deploy this project?
 
 Simply open [Lovable](https://lovable.dev/projects/d419677f-892e-44f7-aeaa-50aa90d000e2) and click on Share -> Publish.
