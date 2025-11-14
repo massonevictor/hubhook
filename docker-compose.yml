@@ -4,35 +4,17 @@ x-stack-env: &stack-env
   - stack.env
 
 services:
-  postgres:
-    image: postgres:16
-    restart: unless-stopped
-    env_file: *stack-env
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-
-  redis:
-    image: redis:7
-    restart: unless-stopped
-    command: ["redis-server", "--appendonly", "no", "--save", ""]
-    env_file: *stack-env
-    ports:
-      - "6379:6379"
-
   server:
     build:
       context: .
       dockerfile: Dockerfile.server
       args:
-        DATABASE_URL: ${DATABASE_URL:-postgresql://appuser4r3:9wg4hw948gha048gh@postgres:5432/appdb134}
-    depends_on:
-      - postgres
-      - redis
+        DATABASE_URL: ${DATABASE_URL:-postgresql://appuser4r3:9wg4hw948gha048gh@postgres-db:5432/appdb134}
     env_file: *stack-env
     ports:
       - "4000:4000"
+    networks:
+      - proxy
 
   web:
     build:
@@ -40,11 +22,12 @@ services:
       dockerfile: Dockerfile.web
       args:
         VITE_API_URL: ${VITE_API_URL:-http://server:4000}
-    depends_on:
-      - server
     env_file: *stack-env
     ports:
       - "5173:80"
+    networks:
+      - proxy
 
-volumes:
-  postgres_data:
+networks:
+  proxy:
+    external: true

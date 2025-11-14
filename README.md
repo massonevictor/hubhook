@@ -58,6 +58,8 @@ Serviços expostos:
 
 Se já houver Postgres/Redis externos (por exemplo, instâncias rodando em Portainer), remova-os do `docker-compose.yml` e ajuste `DATABASE_URL` / `REDIS_URL` nas variáveis de ambiente.
 
+No Portainer, este stack assume que já existem contêineres `postgres-db` e `redis-db` na rede `proxy`. Ajuste o arquivo `stack.env` se os nomes mudarem e garanta que a rede `proxy` esteja marcada como externa no compose ou substitua pelo nome utilizado no seu ambiente.
+
 ## Scripts úteis
 
 - `npm run lint` — ESLint
