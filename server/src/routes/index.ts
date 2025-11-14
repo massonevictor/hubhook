@@ -1,8 +1,8 @@
 import { FastifyInstance } from "fastify";
-import registerProjectsRoutes from "./projects";
-import registerWebhookRoutes from "./webhooks";
-import registerStatsRoutes from "./stats";
-import registerHealthRoutes from "./health";
+import registerProjectsRoutes from "./projects.js";
+import registerWebhookRoutes from "./webhooks.js";
+import registerStatsRoutes from "./stats.js";
+import registerHealthRoutes from "./health.js";
 
 export default async function registerRoutes(app: FastifyInstance) {
   await registerHealthRoutes(app);

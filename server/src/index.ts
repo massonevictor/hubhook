@@ -1,8 +1,8 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
-import { env } from "./env";
-import registerRoutes from "./routes";
-import "./jobs/deliveryWorker";
+import { env } from "./env.js";
+import registerRoutes from "./routes/index.js";
+import "./jobs/deliveryWorker.js";
 
 async function bootstrap() {
   const app = Fastify({ logger: true });

@@ -1,7 +1,7 @@
-import { EventStatus } from "@prisma/client";
+import { EventStatus, Prisma } from "@prisma/client";
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
-import { prisma } from "../lib/prisma";
+import { prisma } from "../lib/prisma.js";
 
 const projectBodySchema = z.object({
   name: z.string().min(3),
@@ -40,7 +40,12 @@ export default async function registerProjectsRoutes(app: FastifyInstance) {
 
   app.post("/api/projects", async (request, reply) => {
     const parsed = projectBodySchema.parse(request.body);
-    const project = await prisma.project.create({ data: parsed });
+    const project = await prisma.project.create({
+      data: {
+        name: parsed.name,
+        description: parsed.description ?? null,
+      } satisfies Prisma.ProjectCreateInput,
+    });
     return reply.code(201).send(project);
   });
 }

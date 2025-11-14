@@ -1,10 +1,10 @@
-import { EventStatus } from "@prisma/client";
+import { EventStatus, Prisma } from "@prisma/client";
 import { FastifyInstance } from "fastify";
 import { customAlphabet } from "nanoid";
 import { z } from "zod";
-import { prisma } from "../lib/prisma";
-import { enqueueDelivery } from "../services/delivery";
-import { slugify } from "../utils/slugify";
+import { prisma } from "../lib/prisma.js";
+import { enqueueDelivery } from "../services/delivery.js";
+import { slugify } from "../utils/slugify.js";
 
 const destinationInputSchema = z.object({
   id: z.string().optional(),
@@ -134,9 +134,12 @@ export default async function registerWebhookRoutes(app: FastifyInstance) {
 
     const route = await prisma.webhookRoute.create({
       data: {
-        ...routeData,
+        name: routeData.name,
+        retentionDays: routeData.retentionDays,
+        maxRetries: routeData.maxRetries,
         slug,
         secret,
+        project: { connect: { id: routeData.projectId } },
         destinations: {
           create: destinations
             .slice()
@@ -241,11 +244,11 @@ export default async function registerWebhookRoutes(app: FastifyInstance) {
   app.get("/api/webhooks", async (request) => {
     const { search, limit } = listQuerySchema.parse(request.query);
 
-    const where = search
+    const where: Prisma.WebhookEventWhereInput = search
       ? {
           OR: [
-            { route: { name: { contains: search, mode: "insensitive" } } },
-            { route: { project: { name: { contains: search, mode: "insensitive" } } } },
+            { route: { name: { contains: search, mode: Prisma.QueryMode.insensitive } } },
+            { route: { project: { name: { contains: search, mode: Prisma.QueryMode.insensitive } } } },
           ],
         }
       : {};
@@ -261,7 +264,7 @@ export default async function registerWebhookRoutes(app: FastifyInstance) {
       },
       orderBy: { createdAt: "desc" },
       take: limit,
-    });
+    } satisfies Prisma.WebhookEventFindManyArgs);
 
     return events.map((event) => ({
       id: event.id,
@@ -407,17 +410,17 @@ export default async function registerWebhookRoutes(app: FastifyInstance) {
       return reply.code(400).send({ message: "Nenhum destino ativo configurado" });
     }
 
-    const payload = request.body ?? {};
+    const payload = (request.body ?? {}) as Prisma.InputJsonValue;
 
     const headers = Object.fromEntries(
       Object.entries(request.headers).map(([key, value]) => [key, Array.isArray(value) ? value.join(",") : value]),
-    );
+    ) as Record<string, string>;
 
     const event = await prisma.webhookEvent.create({
       data: {
         routeId: route.id,
         payload,
-        headers,
+        headers: headers as Prisma.InputJsonValue,
         status: EventStatus.PENDING,
         destinationCount: route.destinations.length,
         deliveredCount: 0,

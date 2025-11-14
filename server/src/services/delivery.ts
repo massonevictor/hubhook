@@ -2,8 +2,8 @@ import { EventStatus } from "@prisma/client";
 import { createHmac } from "crypto";
 import { formatISO } from "date-fns";
 import { fetch } from "undici";
-import { prisma } from "../lib/prisma";
-import { webhookQueue } from "../lib/queue";
+import { prisma } from "../lib/prisma.js";
+import { webhookQueue } from "../lib/queue.js";
 
 const MAX_RESPONSE_LENGTH = 5000;
 

@@ -1,7 +1,7 @@
 import { Worker } from "bullmq";
-import IORedis from "ioredis";
-import { env } from "../env";
-import { deliverEvent } from "../services/delivery";
+import { Redis } from "ioredis";
+import { env } from "../env.js";
+import { deliverEvent } from "../services/delivery.js";
 
 export const deliveryWorker = new Worker(
   "webhook-delivery",
@@ -12,7 +12,7 @@ export const deliveryWorker = new Worker(
     }
   },
   {
-    connection: new IORedis(env.REDIS_URL),
+    connection: new Redis(env.REDIS_URL),
   },
 );
 
