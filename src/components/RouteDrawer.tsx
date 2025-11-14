@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { api, UpdateRoutePayload, WebhookRoute } from "@/lib/api";
+import { api, getApiBaseUrl, UpdateRoutePayload, WebhookRoute } from "@/lib/api";
 import { useToast } from "@/components/ui/use-toast";
 
 interface RouteDrawerProps {
@@ -30,8 +30,7 @@ interface EditableDestination {
   isActive: boolean;
 }
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL ?? (typeof window !== "undefined" ? window.location.origin : "http://localhost:4000");
+const API_BASE_URL = getApiBaseUrl();
 
 export function RouteDrawer({ route, open, onOpenChange }: RouteDrawerProps) {
   const [name, setName] = useState("");
