@@ -7,7 +7,7 @@ import "./jobs/deliveryWorker.js";
 async function bootstrap() {
   const app = Fastify({ logger: true });
 
-  await app.register(cors, { origin: true, credentials: true });
+  await app.register(cors, { origin: env.SERVER_ORIGIN, credentials: true });
   await registerRoutes(app);
 
   try {
