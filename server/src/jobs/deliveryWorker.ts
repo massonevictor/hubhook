@@ -12,7 +12,7 @@ export const deliveryWorker = new Worker(
     }
   },
   {
-    connection: new Redis(env.REDIS_URL),
+    connection: new Redis(env.REDIS_URL, { maxRetriesPerRequest: null }),
   },
 );
 
