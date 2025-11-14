@@ -12,7 +12,7 @@ export function getApiBaseUrl() {
     return normalizeBaseUrl(window.location.origin);
   }
 
-  return "http://localhost:4000";
+  return "https://api.hubhook.nerddomarketing.com.br";
 }
 
 const API_BASE_URL = getApiBaseUrl();

@@ -21,7 +21,7 @@ services:
       context: .
       dockerfile: Dockerfile.web
       args:
-        VITE_API_URL: ${VITE_API_URL:-http://server:4000}
+        VITE_API_URL: ${VITE_API_URL:-https://api.hubhook.nerddomarketing.com.br}
     env_file: *stack-env
     ports:
       - "8081:80"
