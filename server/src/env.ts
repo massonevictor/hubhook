@@ -7,7 +7,7 @@ const envSchema = z.object({
   DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
   REDIS_URL: z.string().min(1, "REDIS_URL is required"),
   SERVER_PORT: z.coerce.number().default(4000),
-  SERVER_ORIGIN: z.string().url().default("https://api.hubhook.nerddomarketing.com.br"),
+  SERVER_ORIGIN: z.string().default("https://hubhook.nerddomarketing.com.br"),
   WEBHOOK_DEFAULT_SECRET: z.string().min(8, "WEBHOOK_DEFAULT_SECRET must be at least 8 characters"),
 });
 
