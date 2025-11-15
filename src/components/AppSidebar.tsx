@@ -30,7 +30,7 @@ export function AppSidebar() {
             {open ? "WebhookHub" : "WH"}
           </h1>
         </div>
-        
+
         <SidebarGroup>
           <SidebarGroupLabel>Menu</SidebarGroupLabel>
           <SidebarGroupContent>
@@ -53,6 +53,9 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+        <div className="px-4 py-3 mt-auto text-xs text-muted-foreground border-t border-sidebar-border">
+          {open ? "Versão 0.2.1" : "v0.2.1"}
+        </div>
       </SidebarContent>
     </Sidebar>
   );
