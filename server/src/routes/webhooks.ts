@@ -1,4 +1,4 @@
-import type { Prisma } from "@prisma/client";
+import type { EventStatus as PrismaEventStatus, Prisma } from "@prisma/client";
 import { FastifyInstance } from "fastify";
 import { customAlphabet } from "nanoid";
 import { z } from "zod";
@@ -35,6 +35,7 @@ const inboundParamsSchema = z.object({ slug: z.string().min(1) });
 const retryParamsSchema = z.object({ id: z.string().min(1) });
 const listQuerySchema = z.object({
   search: z.string().optional(),
+  status: z.enum(["PENDING", "SUCCESS", "FAILED", "RETRYING"]).optional(),
   limit: z.coerce.number().int().min(1).max(100).default(50),
 });
 
@@ -251,16 +252,20 @@ export default async function registerWebhookRoutes(app: FastifyInstance) {
   });
 
   app.get("/api/webhooks", async (request) => {
-    const { search, limit } = listQuerySchema.parse(request.query);
+    const { search, status, limit } = listQuerySchema.parse(request.query);
 
-    const where: Prisma.WebhookEventWhereInput = search
-      ? {
-          OR: [
-            { route: { name: { contains: search, mode: "insensitive" } } },
-            { route: { project: { name: { contains: search, mode: "insensitive" } } } },
-          ],
-        }
-      : {};
+    const where: Prisma.WebhookEventWhereInput = {};
+
+    if (search) {
+      where.OR = [
+        { route: { name: { contains: search, mode: "insensitive" } } },
+        { route: { project: { name: { contains: search, mode: "insensitive" } } } },
+      ];
+    }
+
+    if (status) {
+      where.status = status as PrismaEventStatus;
+    }
 
     const events = await prisma.webhookEvent.findMany({
       where,

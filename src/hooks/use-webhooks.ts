@@ -1,9 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
-import { api, WebhookListItem } from "@/lib/api";
+import { api, WebhookListItem, WebhookStatus } from "@/lib/api";
 
-export function useWebhooks(search: string) {
+export function useWebhooks(params: { search?: string; status?: WebhookStatus }) {
+  const { search, status } = params;
   return useQuery<WebhookListItem[]>({
-    queryKey: ["webhooks", search],
-    queryFn: () => api.getWebhooks(search || undefined),
+    queryKey: ["webhooks", search ?? "", status ?? ""],
+    queryFn: () => api.getWebhooks(params),
   });
 }

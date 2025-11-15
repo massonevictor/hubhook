@@ -169,7 +169,17 @@ export const api = {
       method: "PATCH",
       body: JSON.stringify(payload),
     }),
-  getWebhooks: (search?: string) => request<WebhookListItem[]>(`/api/webhooks${search ? `?search=${encodeURIComponent(search)}` : ""}`),
+  getWebhooks: (params?: { search?: string; status?: WebhookStatus }) => {
+    const searchParams = new URLSearchParams();
+    if (params?.search) {
+      searchParams.set("search", params.search);
+    }
+    if (params?.status) {
+      searchParams.set("status", params.status);
+    }
+    const query = searchParams.toString();
+    return request<WebhookListItem[]>(`/api/webhooks${query ? `?${query}` : ""}`);
+  },
   getEventDetails: (id: string) => request<EventDetails>(`/api/events/${id}`),
   retryEvent: (id: string) =>
     request<{ status: string }>(`/api/events/${id}/retry`, {
