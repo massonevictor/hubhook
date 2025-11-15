@@ -43,7 +43,7 @@ Há dois Dockerfiles: `Dockerfile.server` (API) e `Dockerfile.web` (frontend). P
 docker compose up --build -d
 ```
 
-Aplique migrações dentro do contêiner da API:
+Aplique migrações dentro do contêiner da API (o entrypoint já executa `npx prisma migrate deploy` automaticamente ao subir em produção, mas você pode rodar manualmente se precisar):
 
 ```sh
 docker compose run --rm server npx prisma migrate deploy
