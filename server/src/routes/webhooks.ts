@@ -31,7 +31,6 @@ const updateRouteSchema = z.object({
 });
 
 const inboundParamsSchema = z.object({ slug: z.string().min(1) });
-const inboundQuerySchema = z.object({ secret: z.string().optional() });
 
 const retryParamsSchema = z.object({ id: z.string().min(1) });
 const listQuerySchema = z.object({
@@ -399,8 +398,6 @@ export default async function registerWebhookRoutes(app: FastifyInstance) {
 
   app.post("/api/inbound/:slug", async (request, reply) => {
     const { slug } = inboundParamsSchema.parse(request.params);
-    const { secret: secretQuery } = inboundQuerySchema.parse(request.query);
-    const providedSecret = (request.headers["x-route-secret"] as string | undefined) ?? secretQuery ?? "";
 
     const route = await prisma.webhookRoute.findUnique({
       where: { slug },
@@ -410,10 +407,6 @@ export default async function registerWebhookRoutes(app: FastifyInstance) {
     });
     if (!route || !route.isActive) {
       return reply.code(404).send({ message: "Webhook não encontrado" });
-    }
-
-    if (route.secret !== providedSecret) {
-      return reply.code(401).send({ message: "Segredo inválido" });
     }
 
     if (!route.destinations.length) {
