@@ -1,12 +1,15 @@
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Plus, Folder, Activity } from "lucide-react";
 import { useProjects } from "@/hooks/use-projects";
+import { CreateProjectDialog } from "@/components/CreateProjectDialog";
 
 export default function Projects() {
   const { data, isLoading } = useProjects();
   const projects = data ?? [];
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   return (
     <div className="space-y-6">
@@ -15,7 +18,7 @@ export default function Projects() {
           <h1 className="text-3xl font-bold text-foreground">Projetos</h1>
           <p className="text-muted-foreground mt-1">Organize seus webhooks por projeto</p>
         </div>
-        <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
+        <Button className="bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => setIsDialogOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
           Novo Projeto
         </Button>
@@ -69,6 +72,8 @@ export default function Projects() {
           ))}
         </div>
       )}
+
+      <CreateProjectDialog open={isDialogOpen} onOpenChange={setIsDialogOpen} />
     </div>
   );
 }

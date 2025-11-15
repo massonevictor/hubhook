@@ -72,7 +72,7 @@ export function CreateWebhookDialog({ open, onOpenChange, onCreated }: CreateWeb
     mutationFn: () =>
       api.createWebhookRoute({
         name: formData.name,
-        projectId: formData.projectId,
+        projectId: formData.projectId || undefined,
         retentionDays: Number(formData.retentionDays),
         maxRetries: Number(formData.maxRetries),
         destinations: destinations.map((destination, index) => ({
@@ -106,14 +106,6 @@ export function CreateWebhookDialog({ open, onOpenChange, onCreated }: CreateWeb
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.projectId) {
-      toast({
-        title: "Projeto obrigatório",
-        description: "Selecione um projeto antes de criar o webhook.",
-        variant: "destructive",
-      });
-      return;
-    }
     if (destinations.some((destination) => !destination.endpoint)) {
       toast({
         title: "Destinos incompletos",
@@ -127,8 +119,6 @@ export function CreateWebhookDialog({ open, onOpenChange, onCreated }: CreateWeb
 
   const disabled =
     createWebhookMutation.isPending ||
-    isLoadingProjects ||
-    !projects?.length ||
     destinations.some((destination) => !destination.endpoint);
 
   return (
@@ -158,14 +148,17 @@ export function CreateWebhookDialog({ open, onOpenChange, onCreated }: CreateWeb
             <div className="space-y-2">
               <Label htmlFor="project" className="text-card-foreground">Projeto</Label>
               <Select
-                value={formData.projectId}
-                onValueChange={(value) => setFormData({ ...formData, projectId: value })}
-                disabled={isLoadingProjects || !projects?.length}
+                value={formData.projectId || "none"}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, projectId: value === "none" ? "" : value })
+                }
+                disabled={isLoadingProjects}
               >
                 <SelectTrigger className="bg-secondary border-border">
-                  <SelectValue placeholder={isLoadingProjects ? "Carregando..." : "Selecione um projeto"} />
+                  <SelectValue placeholder={isLoadingProjects ? "Carregando..." : "Selecione (opcional)"} />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="none">Sem projeto</SelectItem>
                   {projects?.map((project) => (
                     <SelectItem key={project.id} value={project.id}>
                       {project.name}
@@ -273,7 +266,9 @@ export function CreateWebhookDialog({ open, onOpenChange, onCreated }: CreateWeb
           </div>
 
           {!projects?.length && !isLoadingProjects && (
-            <p className="text-sm text-muted-foreground">Cadastre um projeto antes de criar webhooks.</p>
+            <p className="text-sm text-muted-foreground">
+              Você pode criar webhooks sem projeto ou cadastrar um projeto para organizar melhor.
+            </p>
           )}
 
           <div className="flex justify-end space-x-3 pt-4">

@@ -16,7 +16,7 @@ const destinationInputSchema = z.object({
 
 const createRouteSchema = z.object({
   name: z.string().min(3),
-  projectId: z.string().min(1),
+  projectId: z.string().min(1).optional().nullable(),
   retentionDays: z.coerce.number().int().min(7).max(90).default(30),
   maxRetries: z.coerce.number().int().min(1).max(10).default(3),
   destinations: z.array(destinationInputSchema.omit({ id: true })).min(1),
@@ -49,6 +49,13 @@ const routeIncludes = {
   _count: { select: { events: true } },
 } as const;
 
+function mapProject(project?: { id: string; name: string } | null) {
+  if (project) {
+    return { id: project.id, name: project.name };
+  }
+  return { id: "unassigned", name: "Sem projeto" };
+}
+
 function normalizeHeaders(headers: unknown) {
   if (!headers || typeof headers !== "object") {
     return {};
@@ -63,7 +70,7 @@ function mapRoute(route: any) {
     id: route.id,
     name: route.name,
     slug: route.slug,
-    project: route.project,
+    project: mapProject(route.project),
     retentionDays: route.retentionDays,
     maxRetries: route.maxRetries,
     isActive: route.isActive,
@@ -109,10 +116,13 @@ export default async function registerWebhookRoutes(app: FastifyInstance) {
 
   app.post("/api/routes", async (request, reply) => {
     const parsed = createRouteSchema.parse(request.body);
-    const { destinations, ...routeData } = parsed;
-    const project = await prisma.project.findUnique({ where: { id: routeData.projectId } });
-    if (!project) {
-      return reply.code(404).send({ message: "Projeto não encontrado" });
+    const { destinations, projectId: rawProjectId, ...routeData } = parsed;
+    const projectId = rawProjectId?.trim() ? rawProjectId.trim() : undefined;
+    if (projectId) {
+      const project = await prisma.project.findUnique({ where: { id: projectId } });
+      if (!project) {
+        return reply.code(404).send({ message: "Projeto não encontrado" });
+      }
     }
 
     const baseSlug = slugify(routeData.name) || `route-${nanoid(6)}`;
@@ -139,7 +149,7 @@ export default async function registerWebhookRoutes(app: FastifyInstance) {
         maxRetries: routeData.maxRetries,
         slug,
         secret,
-        project: { connect: { id: routeData.projectId } },
+        project: projectId ? { connect: { id: projectId } } : undefined,
         destinations: {
           create: destinations
             .slice()
@@ -269,7 +279,7 @@ export default async function registerWebhookRoutes(app: FastifyInstance) {
     return events.map((event) => ({
       id: event.id,
       name: event.route.name,
-      project: event.route.project.name,
+      project: event.route.project?.name ?? "Sem projeto",
       status: event.status,
       attempts: event.attemptCount,
       timestamp: event.createdAt,
@@ -319,7 +329,7 @@ export default async function registerWebhookRoutes(app: FastifyInstance) {
         id: event.route.id,
         name: event.route.name,
         slug: event.route.slug,
-        project: event.route.project,
+        project: mapProject(event.route.project),
         inboundUrl: `/api/inbound/${event.route.slug}`,
         secret: event.route.secret,
         destinations: event.route.destinations

@@ -59,6 +59,11 @@ export interface ProjectSummary {
   successRate: number;
 }
 
+export interface CreateProjectPayload {
+  name: string;
+  description?: string;
+}
+
 export type WebhookStatus = "PENDING" | "SUCCESS" | "FAILED" | "RETRYING";
 
 export interface WebhookListItem {
@@ -106,7 +111,7 @@ export interface WebhookRoute {
 
 export interface CreateRoutePayload {
   name: string;
-  projectId: string;
+  projectId?: string;
   retentionDays: number;
   maxRetries: number;
   destinations: Array<Omit<DestinationInput, "id">>;
@@ -152,6 +157,11 @@ export interface EventDetails {
 export const api = {
   getDashboardSummary: () => request<DashboardSummary>("/api/stats/summary"),
   getProjects: () => request<ProjectSummary[]>("/api/projects"),
+  createProject: (payload: CreateProjectPayload) =>
+    request<ProjectSummary>("/api/projects", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
   getRoutes: () => request<WebhookRoute[]>("/api/routes"),
   getRoute: (id: string) => request<WebhookRoute>(`/api/routes/${id}`),
   updateRoute: (id: string, payload: UpdateRoutePayload) =>

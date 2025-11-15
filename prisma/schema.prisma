@@ -25,8 +25,8 @@ model Project {
 
 model WebhookRoute {
   id              String         @id @default(cuid())
-  projectId       String
-  project         Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId       String?
+  project         Project?       @relation(fields: [projectId], references: [id], onDelete: Cascade)
   name            String
   slug            String         @unique
   retentionDays   Int            @default(30)

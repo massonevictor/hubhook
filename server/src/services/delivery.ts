@@ -65,7 +65,7 @@ export async function deliverEvent(eventId: string) {
           "content-type": "application/json",
           "x-webhookhub-event-id": event.id,
           "x-webhookhub-route": event.route.slug,
-          "x-webhookhub-project": event.route.project.name,
+          "x-webhookhub-project": event.route.project?.name ?? "Sem projeto",
           "x-webhookhub-signature": signature,
           "x-webhookhub-timestamp": formatISO(new Date()),
         },
