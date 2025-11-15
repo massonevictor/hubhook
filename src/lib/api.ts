@@ -18,13 +18,17 @@ export function getApiBaseUrl() {
 const API_BASE_URL = getApiBaseUrl();
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
+  const headers: Record<string, string> = {
+    ...(options?.headers as Record<string, string> | undefined),
+  };
+
+  if (options?.body && !headers["content-type"]) {
+    headers["content-type"] = "application/json";
+  }
+
   const response = await fetch(`${API_BASE_URL}${path}`, {
-    headers: {
-      "content-type": "application/json",
-      ...(options?.headers ?? {}),
-    },
     ...options,
-    body: options?.body,
+    headers,
   });
 
   if (!response.ok) {
